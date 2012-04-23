@@ -11,6 +11,11 @@ my app project.
 
     $ ./submodule_switcher.py /Users/modocache/app vendor/JSONKit JSONKit modocache
 
+After I've made my changes and pushed to my fork, I can revert back to
+the original owner's repository just as easily:
+
+    $ ./submodule_switcher.py /Users/modocache/app vendor/JSONKit JSONKit johnezang
+
 For more help, you can always type:
 
     $ ./submodule_switcher.py --help
