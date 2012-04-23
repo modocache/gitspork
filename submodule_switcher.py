@@ -122,7 +122,7 @@ def get_argparse_args():
     )
     parser.add_argument(
         '-u', '--upstream_url',
-        help='The account name of a fork to be added as an upstream remote.'
+        help='The url a fork to be added as an upstream remote.'
     )
     args = parser.parse_args()
     return vars(args)
