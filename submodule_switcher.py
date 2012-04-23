@@ -25,7 +25,7 @@ def cd(directory):
 
 def git_submodule_diff(submodule_path):
     with cd(submodule_path):
-        return subprocess.check_output('git diff master', shell=True)
+        return subprocess.check_output('git diff', shell=True)
 
 
 def git_submodule_safety_commit(submodule_path):
