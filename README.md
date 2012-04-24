@@ -1,4 +1,4 @@
-# Submodule Switcher
+# Submodule Switcher [![endorse](http://api.coderwall.com/modocache/endorsecount.png)](http://coderwall.com/modocache)
 
 Change the origin repository of your submodules 
 so you can work on submodule forks easily.
