@@ -23,13 +23,13 @@ def cd(directory):
     os.chdir(cwd)
 
 
-def git_submodule_diff(submodule_path):
-    with cd(submodule_path):
+def git_submodule_diff(sub_path):
+    with cd(sub_path):
         return subprocess.check_output('git diff', shell=True)
 
 
-def git_submodule_safety_commit(submodule_path):
-    with cd(submodule_path):
+def git_submodule_safety_commit(sub_path):
+    with cd(sub_path):
         msg = 'Automatic safety commit before submodule switch.'
         timestamp = time.ctime().replace(' ', '-').replace(':', '-')
         branch_name = 'submodule_switcher_{0}'.format(timestamp)
@@ -75,8 +75,41 @@ def git_submodule_sync():
 
 def git_submodule_reset(submodule_path):
     with cd(submodule_path):
-        subprocess.call('git fetch origin', shell=True)
+        try:
+            subprocess.check_call('git fetch origin', shell=True)
+        except subprocess.CalledProcessError:
+            return False
+
         subprocess.call('git reset --hard origin/master', shell=True)
+        return True
+
+
+def git_spork(
+    prj_dir, sub_relpath, sub_repo_name,fork_account, upstream_url, safe=True):
+    with cd(prj_dir):
+        if not git_submodule_diff(sub_relpath):
+            if safe:
+                git_submodule_safety_commit(sub_relpath)
+
+            set_submodule_remote(
+                prj_dir, sub_relpath, sub_repo_name, fork_account)
+
+            git_submodule_sync()
+            is_success = git_submodule_reset(sub_relpath)
+
+            if is_success and upstream_url:
+                git_submodule_remote_add_upstream(
+                    sub_relpath, upstream_url)
+
+            return is_success
+
+        else:
+            print(
+                'ERROR: You have local changes that are not committed to '
+                'the master branch in {0}.\nReset these changes and try '
+                'again.'.format(sub_relpath)
+            )
+            return False
 
 
 def git_submodule_remote_add_upstream(submodule_path, account_name):
@@ -130,34 +163,19 @@ def get_argparse_args():
 
 def main():
     args = get_argparse_args()
+
     prj_dir = args.get('project_dir')
     sub_relpath = args.get('submodule_relpath')
     sub_repo_name = args.get('submodule_repo_name')
     fork_account = args.get('fork_account')
     upstream_url = args.get('upstream_url', None)
 
-    submodule_abspath = os.path.join(prj_dir, sub_relpath)
+    is_success = git_spork(
+        prj_dir, sub_relpath, sub_repo_name, fork_account, upstream_url)
 
-    if not git_submodule_diff(submodule_abspath):
-        git_submodule_safety_commit(submodule_abspath)
-
-        set_submodule_remote(
-            prj_dir, sub_relpath, sub_repo_name, fork_account)
-
-        git_submodule_sync()
-        git_submodule_reset(submodule_abspath)
-
-        if upstream_url:
-            git_submodule_remote_add_upstream(submodule_abspath, upstream_url)
-
-        git_submodule_remote_show(submodule_abspath)
-
+    if is_success:
+        git_submodule_remote_show(os.path.join(prj_dir, sub_relpath))
     else:
-        print(
-            'ERROR: You have local changes that are not committed to '
-            'the master branch in {0}.\nReset these changes and try '
-            'again.'.format(sub_relpath)
-        )
         sys.exit(1)
 
 
