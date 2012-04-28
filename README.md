@@ -5,7 +5,7 @@ so you can work on submodule forks easily.
 
 ### Installation
 
-    $ pip install git+git@github.com:modocache/gitspork.git
+    $ pip install git+http://modocache@github.com/modocache/gitspork.git
 
 ### Usage
 
